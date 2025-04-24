@@ -121,5 +121,79 @@ print("YAML configuration saved:")
 with open('data.yaml', 'r') as f:
     print(f.read())
 
+# Initialize YOLO model
+model = YOLO('yolov8x.pt')
+
+# Train the model
+results = model.train(
+    data='/kaggle/working/data.yaml',
+    epochs=20,
+    imgsz=640,
+    batch=8,
+    name='dice_detector'
+)
+
+# Save the trained model
+model.export(format='onnx')
+model.save('dice_detector.pt')
+print("Model saved successfully")
+
+# list your test images directory
+test_images = os.listdir(os.path.join(test_path, 'images'))
+if test_images:
+    # pick up to 6 random images
+    n_images = min(6, len(test_images))
+    sample_images = random.sample(test_images, n_images)
+
+    cols = 2
+    rows = math.ceil(n_images / cols)
+    plt.figure(figsize=(15, rows * 7))
+
+    for i, img_file in enumerate(sample_images):
+        img_path = os.path.join(test_path, 'images', img_file)
+        results = model.predict(img_path, conf=0.25)
+
+        # create a subplot
+        ax = plt.subplot(rows, cols, i + 1)
+        img = Image.open(img_path)
+        ax.imshow(img)
+        ax.set_title(f"Test {i+1}: {img_file}", fontsize=12)
+        ax.axis('off')
+
+        # iterate each detection in this image
+        for res in results:
+            # extract boxes, classes, and confidences
+            boxes = res.boxes.xyxy.cpu().numpy()
+            classes = res.boxes.cls.cpu().numpy()
+            confs = res.boxes.conf.cpu().numpy()
+
+            for box, cls, conf in zip(boxes, classes, confs):
+                x1, y1, x2, y2 = box
+
+                # unfilled bounding box
+                rect = plt.Rectangle(
+                    (x1, y1), x2 - x1, y2 - y1,
+                    fill=False, edgecolor='red', linewidth=2
+                )
+                ax.add_patch(rect)
+
+                # label with class name and confidence
+                label = model.names[int(cls)] if hasattr(model, 'names') else str(int(cls))
+                ax.text(
+                    x1, y1 - 5,
+                    f"{label}, {conf:.2f}",
+                    fontsize=10,
+                    verticalalignment='bottom',
+                    bbox=dict(facecolor='yellow', alpha=0.5, edgecolor='none')
+                )
+
+    plt.tight_layout()
+    plt.show()
+
+# Evaluate the model on test set
+test_results = model.val(data='/kaggle/working/data.yaml', split='test')
+print("Test Results:", test_results)
+
+
 
 
