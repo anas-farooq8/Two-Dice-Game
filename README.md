@@ -8,7 +8,7 @@ The Two Dice Game is an interactive web application that uses computer vision to
 
 ## Game Rules
 
-1. Two players (left and right) take turns rolling dice.
+1. Two players (left and right) take turns rolling the dice.
 2. Each player places one die on their respective side of the camera view.
 3. The application recognizes the dice values and adds them to the player's score.
 4. If both dice show the same value, the game ends.
@@ -22,7 +22,6 @@ The Two Dice Game is an interactive web application that uses computer vision to
 - Multi-attempt detection system for improved accuracy
 - Game state management
 - Responsive web interface
-- Mobile-friendly design
 - Error handling and connection monitoring
 
 ## Technical Stack
@@ -96,7 +95,7 @@ The dice detection model was trained using YOLOv8 on a dataset of dice images. T
 - **Image Size**: 640x640
 - **Batch Size**: 16
 
-The training code can be found in `train.py`.
+The training code can be found in `train.ipynb`.
 ![Image](https://github.com/user-attachments/assets/5c1b9a4f-346a-44b9-96b3-809ba42810b4)
 
 ## Implementation Details
